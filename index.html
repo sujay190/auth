@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Real OTP Authentication</title>
+  <title>OTP Verification</title>
 
   <!-- Include EmailJS SDK -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -117,7 +117,7 @@
 
   <div class="auth-card">
 
-    <!-- Step 1: Send OTP Screen -->
+    <!-- Step 1: Request OTP -->
     <div id="email-step">
       <div class="auth-header">
         <h2>Sign In with OTP</h2>
@@ -133,7 +133,7 @@
       </form>
     </div>
 
-    <!-- Step 2: Verify OTP Screen -->
+    <!-- Step 2: Verify OTP -->
     <div id="otp-step" class="hidden">
       <div class="auth-header">
         <h2>Verify OTP</h2>
@@ -156,11 +156,14 @@
   </div>
 
   <script>
-    // 1. Initialize EmailJS with your Public Key
-    const PUBLIC_KEY = "mxDQQ2yK3yNUjucKv";
-    const SERVICE_ID = "service_hhl1o9l";
-    const TEMPLATE_ID = "template_rqwbizl";
+    // =========================================================
+    // ⚠️ REPLACE THESE 3 VALUES WITH YOUR EMAILJS CREDENTIALS
+    // =========================================================
+    const PUBLIC_KEY = "mxDQQ2yK3yNUjucKv";  // From EmailJS Dashboard > Account
+    const SERVICE_ID = "service_hhl1o9l";   // Your Gmail Service ID
+    const TEMPLATE_ID = "template_rqwbizl"; // From EmailJS Dashboard > Email Templates
 
+    // Initialize EmailJS
     emailjs.init(PUBLIC_KEY);
 
     let generatedOtp = null;
@@ -171,10 +174,10 @@
     const otpInputs = document.querySelectorAll('.otp-input');
     const sendBtn = document.getElementById('send-btn');
 
-    // Auto-focus next box in 6-digit input
+    // Auto-focus next box when typing 6-digit OTP
     otpInputs.forEach((input, index) => {
       input.addEventListener('keyup', (e) => {
-        if (e.key >= 0 && e.key <= 9) {
+        if (e.key >= '0' && e.key <= '9') {
           if (index < otpInputs.length - 1) otpInputs[index + 1].focus();
         } else if (e.key === 'Backspace') {
           if (index > 0) otpInputs[index - 1].focus();
@@ -182,12 +185,12 @@
       });
     });
 
-    // 2. Handle Request OTP (Generates random 6-digit code & sends email)
+    // 1. Send OTP Event
     document.getElementById('request-otp-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('email').value;
+      const email = document.getElementById('email').value.trim();
 
-      // Generate a random 6-digit number
+      // Generate random 6-digit OTP
       generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
       sendBtn.innerText = "Sending email...";
@@ -196,14 +199,14 @@
       try {
         // Send email via EmailJS
         await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-          to_email: email,
-          otp_code: generatedOtp
+          to_email: email,      // Ensure EmailJS template has {{to_email}} in "To Email"
+          otp_code: generatedOtp // Ensure EmailJS template content has {{otp_code}}
         });
 
-        alert("OTP sent successfully to your inbox!");
+        alert("OTP sent successfully to your email!");
         targetEmail.innerText = email;
 
-        // Switch to OTP view
+        // Switch screens to OTP entry
         emailStep.classList.add('hidden');
         otpStep.classList.remove('hidden');
         otpInputs[0].focus();
@@ -215,14 +218,15 @@
       }
     });
 
-    // 3. Handle Verify OTP
+    // 2. Verify OTP Event & Redirect to YouTube
     document.getElementById('verify-otp-form').addEventListener('submit', (e) => {
       e.preventDefault();
       let enteredOtp = "";
       otpInputs.forEach(input => enteredOtp += input.value);
 
       if (enteredOtp === generatedOtp) {
-        alert("🎉 Success! OTP verified. You are now logged in.");
+        alert("🎉 Success! OTP verified. Redirecting to YouTube...");
+        window.location.href = "https://www.youtube.com";
       } else {
         alert("❌ Incorrect OTP code. Please check your email and try again.");
       }
