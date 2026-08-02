@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OTP Authentication</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .auth-card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 420px;
+      padding: 40px 32px;
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .auth-header h2 {
+      font-size: 24px;
+      color: #1a1d20;
+      margin-bottom: 8px;
+    }
+
+    .auth-header p {
+      font-size: 14px;
+      color: #6c757d;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #343a40;
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    /* 6-Digit OTP Box Styling */
+    .otp-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .otp-input {
+      width: 48px;
+      height: 52px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .otp-input:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #0d6efd;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="auth-card">
+
+    <!-- Step 1: Send OTP Screen -->
+    <div id="email-step">
+      <div class="auth-header">
+        <h2>Sign In with OTP</h2>
+        <p>Enter your email to receive a verification code.</p>
+      </div>
+
+      <form id="request-otp-form">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="name@company.com" required />
+        </div>
+        <button type="submit" class="submit-btn">Send OTP Code</button>
+      </form>
+    </div>
+
+    <!-- Step 2: Verify OTP Screen -->
+    <div id="otp-step" class="hidden">
+      <div class="auth-header">
+        <h2>Verify OTP</h2>
+        <p>Enter the 6-digit code sent to <br><b id="target-email"></b></p>
+      </div>
+
+      <form id="verify-otp-form">
+        <div class="otp-container">
+          <input type="text" class="otp-input" maxlength="1" required />
+          <input type="text" class="otp-input" maxlength="1" required />
+          <input type="text" class="otp-input" maxlength="1" required />
+          <input type="text" class="otp-input" maxlength="1" required />
+          <input type="text" class="otp-input" maxlength="1" required />
+          <input type="text" class="otp-input" maxlength="1" required />
+        </div>
+        <button type="submit" class="submit-btn">Verify & Sign In</button>
+      </form>
+    </div>
+
+  </div>
+
+  <script>
+    const emailStep = document.getElementById('email-step');
+    const otpStep = document.getElementById('otp-step');
+    const targetEmail = document.getElementById('target-email');
+    const otpInputs = document.querySelectorAll('.otp-input');
+
+    // Automatically shift focus to next OTP box as user types
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('keyup', (e) => {
+        if (e.key >= 0 && e.key <= 9) {
+          if (index < otpInputs.length - 1) {
+            otpInputs[index + 1].focus();
+          }
+        } else if (e.key === 'Backspace') {
+          if (index > 0) {
+            otpInputs[index - 1].focus();
+          }
+        }
+      });
+    });
+
+    // Handle Request OTP
+    document.getElementById('request-otp-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+
+      // Target display email in step 2
+      targetEmail.innerText = email;
+
+      // TODO: Call your backend or EmailJS to trigger the email delivery here
+
+      // Show Step 2
+      emailStep.classList.add('hidden');
+      otpStep.classList.remove('hidden');
+      otpInputs[0].focus();
+    });
+
+    // Handle Verify OTP
+    document.getElementById('verify-otp-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      let enteredOtp = "";
+      otpInputs.forEach(input => enteredOtp += input.value);
+
+      alert(`Submitted OTP: ${enteredOtp}`);
+      // TODO: Verify the entered OTP against your backend code
+    });
+  </script>
+</body>
+
+</html>
