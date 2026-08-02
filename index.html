@@ -4,7 +4,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OTP Authentication</title>
+  <title>Real OTP Authentication</title>
+
+  <!-- Include EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -68,7 +72,6 @@
       outline: none;
     }
 
-    /* 6-Digit OTP Box Styling */
     .otp-container {
       display: flex;
       justify-content: space-between;
@@ -87,11 +90,6 @@
       outline: none;
     }
 
-    .otp-input:focus {
-      border-color: #0d6efd;
-      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
-    }
-
     .submit-btn {
       width: 100%;
       padding: 12px;
@@ -102,6 +100,11 @@
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
+    }
+
+    .submit-btn:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
     }
 
     .hidden {
@@ -118,7 +121,7 @@
     <div id="email-step">
       <div class="auth-header">
         <h2>Sign In with OTP</h2>
-        <p>Enter your email to receive a verification code.</p>
+        <p>Enter your email to receive a real verification code.</p>
       </div>
 
       <form id="request-otp-form">
@@ -126,7 +129,7 @@
           <label for="email">Email Address</label>
           <input type="email" id="email" placeholder="name@company.com" required />
         </div>
-        <button type="submit" class="submit-btn">Send OTP Code</button>
+        <button type="submit" id="send-btn" class="submit-btn">Send OTP Code</button>
       </form>
     </div>
 
@@ -153,50 +156,76 @@
   </div>
 
   <script>
+    // 1. Initialize EmailJS with your Public Key
+    const PUBLIC_KEY = "mxDQQ2yK3yNUjucKv";
+    const SERVICE_ID = "service_hhl1o9l";
+    const TEMPLATE_ID = "template_rqwbizl";
+
+    emailjs.init(PUBLIC_KEY);
+
+    let generatedOtp = null;
+
     const emailStep = document.getElementById('email-step');
     const otpStep = document.getElementById('otp-step');
     const targetEmail = document.getElementById('target-email');
     const otpInputs = document.querySelectorAll('.otp-input');
+    const sendBtn = document.getElementById('send-btn');
 
-    // Automatically shift focus to next OTP box as user types
+    // Auto-focus next box in 6-digit input
     otpInputs.forEach((input, index) => {
       input.addEventListener('keyup', (e) => {
         if (e.key >= 0 && e.key <= 9) {
-          if (index < otpInputs.length - 1) {
-            otpInputs[index + 1].focus();
-          }
+          if (index < otpInputs.length - 1) otpInputs[index + 1].focus();
         } else if (e.key === 'Backspace') {
-          if (index > 0) {
-            otpInputs[index - 1].focus();
-          }
+          if (index > 0) otpInputs[index - 1].focus();
         }
       });
     });
 
-    // Handle Request OTP
-    document.getElementById('request-otp-form').addEventListener('submit', (e) => {
+    // 2. Handle Request OTP (Generates random 6-digit code & sends email)
+    document.getElementById('request-otp-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
 
-      // Target display email in step 2
-      targetEmail.innerText = email;
+      // Generate a random 6-digit number
+      generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
-      // TODO: Call your backend or EmailJS to trigger the email delivery here
+      sendBtn.innerText = "Sending email...";
+      sendBtn.disabled = true;
 
-      // Show Step 2
-      emailStep.classList.add('hidden');
-      otpStep.classList.remove('hidden');
-      otpInputs[0].focus();
+      try {
+        // Send email via EmailJS
+        await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+          to_email: email,
+          otp_code: generatedOtp
+        });
+
+        alert("OTP sent successfully to your inbox!");
+        targetEmail.innerText = email;
+
+        // Switch to OTP view
+        emailStep.classList.add('hidden');
+        otpStep.classList.remove('hidden');
+        otpInputs[0].focus();
+
+      } catch (error) {
+        alert("Failed to send OTP email: " + JSON.stringify(error));
+        sendBtn.innerText = "Send OTP Code";
+        sendBtn.disabled = false;
+      }
     });
 
-    // Handle Verify OTP
+    // 3. Handle Verify OTP
     document.getElementById('verify-otp-form').addEventListener('submit', (e) => {
       e.preventDefault();
       let enteredOtp = "";
       otpInputs.forEach(input => enteredOtp += input.value);
 
-      alert(`Submitted OTP: ${enteredOtp}`);
-      // TODO: Verify the entered OTP against your backend code
+      if (enteredOtp === generatedOtp) {
+        alert("🎉 Success! OTP verified. You are now logged in.");
+      } else {
+        alert("❌ Incorrect OTP code. Please check your email and try again.");
+      }
     });
   </script>
 </body>
