@@ -1,12 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OTP Verification</title>
+  <title>FreshMarket - Live Grocery Prices</title>
+  
+  <!-- Include EmailJS SDK -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  
   <style>
+    :root {
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -15,21 +26,25 @@
     }
 
     body {
-      background-color: #f4f6f8;
+      background: var(--bg-gradient);
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
       padding: 20px;
+      color: var(--text-main);
     }
 
+    /* --- AUTH CARD STYLES --- */
     .auth-card {
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
       width: 100%;
       max-width: 420px;
       padding: 40px 32px;
+      transition: all 0.3s ease;
     }
 
     .auth-header {
@@ -38,85 +53,253 @@
     }
 
     .auth-header h2 {
-      font-size: 24px;
-      color: #1a1d20;
+      font-size: 26px;
+      color: #0f172a;
       margin-bottom: 8px;
     }
 
     .auth-header p {
       font-size: 14px;
-      color: #6c757d;
+      color: var(--text-muted);
     }
 
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
 
     .form-group label {
       display: block;
       font-size: 13px;
       font-weight: 600;
-      color: #343a40;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .form-group input {
       width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #ced4da;
-      border-radius: 6px;
-      font-size: 14px;
+      padding: 12px 16px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 15px;
       outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--primary);
     }
 
     .otp-container {
       display: flex;
       justify-content: space-between;
       gap: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .otp-input {
       width: 48px;
-      height: 52px;
+      height: 54px;
       text-align: center;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: bold;
-      border: 1px solid #ced4da;
-      border-radius: 6px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
       outline: none;
+    }
+
+    .otp-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
     }
 
     .submit-btn {
       width: 100%;
-      padding: 12px;
-      background-color: #0d6efd;
+      padding: 14px;
+      background-color: var(--primary);
       color: white;
       border: none;
-      border-radius: 6px;
-      font-size: 15px;
+      border-radius: 8px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .submit-btn:hover {
+      background-color: var(--primary-hover);
     }
 
     .submit-btn:disabled {
-      background-color: #6c757d;
+      background-color: #94a3b8;
       cursor: not-allowed;
     }
 
+    /* --- GROCERY DASHBOARD STYLES --- */
+    .dashboard-container {
+      width: 100%;
+      max-width: 1000px;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 20px 30px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .dash-header h1 {
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-live {
+      background: #ef4444;
+      color: white;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      animation: pulse 1.5s infinite;
+    }
+
+    .controls-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 240px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: none;
+      font-size: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      outline: none;
+    }
+
+    .category-filters {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+    }
+
+    .filter-btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--primary);
+    }
+
+    .grocery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .item-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+
+    .item-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+    }
+
+    .item-emoji {
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .item-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .item-unit {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .item-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .item-price {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary-hover);
+    }
+
+    .trend-indicator {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .trend-up { background: #fee2e2; color: #dc2626; }
+    .trend-down { background: #d1fae5; color: #059669; }
+
     .hidden {
-      display: none;
+      display: none !important;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
     }
   </style>
 </head>
-
 <body>
-  <div class="auth-card">
+
+  <!-- ================= AUTH CONTAINER ================= -->
+  <div class="auth-card" id="auth-section">
+    
+    <!-- Step 1: Request OTP -->
     <div id="email-step">
       <div class="auth-header">
         <h2>Sign In with OTP</h2>
         <p>Enter your email to receive a real verification code.</p>
       </div>
+
       <form id="request-otp-form">
         <div class="form-group">
           <label for="email">Email Address</label>
@@ -125,11 +308,14 @@
         <button type="submit" id="send-btn" class="submit-btn">Send OTP Code</button>
       </form>
     </div>
+
+    <!-- Step 2: Verify OTP -->
     <div id="otp-step" class="hidden">
       <div class="auth-header">
         <h2>Verify OTP</h2>
         <p>Enter the 6-digit code sent to <br><b id="target-email"></b></p>
       </div>
+
       <form id="verify-otp-form">
         <div class="otp-container">
           <input type="text" class="otp-input" maxlength="1" required />
@@ -139,21 +325,57 @@
           <input type="text" class="otp-input" maxlength="1" required />
           <input type="text" class="otp-input" maxlength="1" required />
         </div>
-        <button type="submit" class="submit-btn">Verify & Sign In</button>
+        <button type="submit" class="submit-btn">Verify & Unlock Prices</button>
       </form>
     </div>
+
   </div>
+
+  <!-- ================= GROCERY DASHBOARD CONTAINER ================= -->
+  <div class="dashboard-container hidden" id="dashboard-section">
+    
+    <div class="dash-header">
+      <h1>🛒 FreshMarket Prices <span class="badge-live">LIVE</span></h1>
+      <p style="color: var(--text-muted); font-size: 14px;">Market rates updated daily</p>
+    </div>
+
+    <div class="controls-bar">
+      <input type="text" id="search-input" class="search-box" placeholder="Search groceries (e.g. Milk, Apples, Eggs)..." />
+      <div class="category-filters">
+        <button class="filter-btn active" onclick="filterCategory('all', this)">All</button>
+        <button class="filter-btn" onclick="filterCategory('fruits', this)">Fruits</button>
+        <button class="filter-btn" onclick="filterCategory('vegetables', this)">Vegetables</button>
+        <button class="filter-btn" onclick="filterCategory('dairy', this)">Dairy & Eggs</button>
+      </div>
+    </div>
+
+    <div class="grocery-grid" id="grocery-grid">
+      <!-- Items generated dynamically via JavaScript -->
+    </div>
+
+  </div>
+
   <script>
-    const PUBLIC_KEY = "mxDQQ2yK3yNUjucKv";
-    const SERVICE_ID = "service_hhl1o9l";
-    const TEMPLATE_ID = "template_rqwbizl";
+    // =========================================================
+    // ⚠️ REPLACE THESE WITH YOUR ACTUAL EMAILJS CREDENTIALS
+    // =========================================================
+    const PUBLIC_KEY = "YOUR_PUBLIC_KEY";  
+    const SERVICE_ID = "service_hhl1o9l";   
+    const TEMPLATE_ID = "YOUR_TEMPLATE_ID"; 
+
     emailjs.init(PUBLIC_KEY);
+
     let generatedOtp = null;
+
+    const authSection = document.getElementById('auth-section');
+    const dashboardSection = document.getElementById('dashboard-section');
     const emailStep = document.getElementById('email-step');
     const otpStep = document.getElementById('otp-step');
     const targetEmail = document.getElementById('target-email');
     const otpInputs = document.querySelectorAll('.otp-input');
     const sendBtn = document.getElementById('send-btn');
+
+    // Auto-focus next box in OTP entry
     otpInputs.forEach((input, index) => {
       input.addEventListener('keyup', (e) => {
         if (e.key >= '0' && e.key <= '9') {
@@ -163,40 +385,113 @@
         }
       });
     });
+
+    // Send OTP Event
     document.getElementById('request-otp-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
+
       generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
       sendBtn.innerText = "Sending email...";
       sendBtn.disabled = true;
+
       try {
         await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-          to_email: email,
-          otp_code: generatedOtp
+          to_email: email,      
+          otp_code: generatedOtp 
         });
+
         alert("OTP sent successfully to your email!");
         targetEmail.innerText = email;
+
         emailStep.classList.add('hidden');
         otpStep.classList.remove('hidden');
         otpInputs[0].focus();
+
       } catch (error) {
         alert("Failed to send OTP email: " + JSON.stringify(error));
         sendBtn.innerText = "Send OTP Code";
         sendBtn.disabled = false;
       }
     });
+
+    // Verify OTP Event
     document.getElementById('verify-otp-form').addEventListener('submit', (e) => {
       e.preventDefault();
       let enteredOtp = "";
       otpInputs.forEach(input => enteredOtp += input.value);
+
       if (enteredOtp === generatedOtp) {
-        alert("🎉 Success! OTP verified. Redirecting to YouTube...");
-        window.location.href = "https://www.youtube.com";
+        // Hide Auth, Show Dashboard
+        authSection.classList.add('hidden');
+        dashboardSection.classList.remove('hidden');
+        renderGroceryItems(groceryData);
       } else {
         alert("❌ Incorrect OTP code. Please check your email and try again.");
       }
     });
+
+    // =========================================================
+    // GROCERY DATA & RENDERING LOGIC
+    // =========================================================
+    const groceryData = [
+      { name: "Fresh Farm Milk", price: "₹64", unit: "1 Litre", cat: "dairy", emoji: "🥛", trend: "-2%", trendType: "down" },
+      { name: "Organic Eggs", price: "₹85", unit: "Tray of 12", cat: "dairy", emoji: "🥚", trend: "+4%", trendType: "up" },
+      { name: "Shimla Apples", price: "₹180", unit: "1 kg", cat: "fruits", emoji: "🍎", trend: "-5%", trendType: "down" },
+      { name: "Bananas (Robusta)", price: "₹50", unit: "1 dozen", cat: "fruits", emoji: "🍌", trend: "0%", trendType: "down" },
+      { name: "Fresh Tomatoes", price: "₹38", unit: "1 kg", cat: "vegetables", emoji: "🍅", trend: "-12%", trendType: "down" },
+      { name: "Onions", price: "₹32", unit: "1 kg", cat: "vegetables", emoji: "🧅", trend: "+3%", trendType: "up" },
+      { name: "Potatoes", price: "₹28", unit: "1 kg", cat: "vegetables", emoji: "🥔", trend: "0%", trendType: "down" },
+      { name: "Amul Butter", price: "₹58", unit: "100g", cat: "dairy", emoji: "🧈", trend: "0%", trendType: "down" },
+      { name: "Fresh Spinach (Palak)", price: "₹25", unit: "1 Bunch", cat: "vegetables", emoji: "🥬", trend: "-8%", trendType: "down" },
+      { name: " Alphonso Mangoes", price: "₹350", unit: "1 kg", cat: "fruits", emoji: "🥭", trend: "+10%", trendType: "up" }
+    ];
+
+    function renderGroceryItems(items) {
+      const grid = document.getElementById('grocery-grid');
+      grid.innerHTML = "";
+
+      if (items.length === 0) {
+        grid.innerHTML = `<p style="color: white; grid-column: 1/-1; text-align: center;">No grocery items found.</p>`;
+        return;
+      }
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.innerHTML = `
+          <div class="item-emoji">${item.emoji}</div>
+          <div class="item-title">${item.name}</div>
+          <div class="item-unit">${item.unit}</div>
+          <div class="item-footer">
+            <span class="item-price">${item.price}</span>
+            <span class="trend-indicator trend-${item.trendType}">${item.trend}</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Category Filter Handler
+    function filterCategory(category, button) {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+
+      if (category === 'all') {
+        renderGroceryItems(groceryData);
+      } else {
+        const filtered = groceryData.filter(item => item.cat === category);
+        renderGroceryItems(filtered);
+      }
+    }
+
+    // Search Box Handler
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const searched = groceryData.filter(item => item.name.toLowerCase().includes(query));
+      renderGroceryItems(searched);
+    });
   </script>
 </body>
-
 </html>
