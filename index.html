@@ -3,19 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FreshMarket - Live Grocery Prices</title>
+  <title>TradePulse - Live Share Market Dashboard</title>
   
   <!-- Include EmailJS SDK -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   
   <style>
     :root {
-      --primary: #10b981;
-      --primary-hover: #059669;
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      --card-bg: rgba(255, 255, 255, 0.95);
-      --text-main: #0f172a;
-      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-gradient: linear-gradient(135deg, #0b0f19 0%, #111827 100%);
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-light-bg: #ffffff;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --green: #10b981;
+      --red: #ef4444;
     }
 
     * {
@@ -37,13 +40,13 @@
 
     /* --- AUTH CARD STYLES --- */
     .auth-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(10px);
+      background: var(--card-light-bg);
       border-radius: 16px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
       width: 100%;
       max-width: 420px;
       padding: 40px 32px;
+      color: #0f172a;
       transition: all 0.3s ease;
     }
 
@@ -60,7 +63,7 @@
 
     .auth-header p {
       font-size: 14px;
-      color: var(--text-muted);
+      color: #64748b;
     }
 
     .form-group {
@@ -72,12 +75,13 @@
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 8px;
+      color: #334155;
     }
 
     .form-group input {
       width: 100%;
       padding: 12px 16px;
-      border: 1.5px solid #e2e8f0;
+      border: 1.5px solid #cbd5e1;
       border-radius: 8px;
       font-size: 15px;
       outline: none;
@@ -101,14 +105,15 @@
       text-align: center;
       font-size: 22px;
       font-weight: bold;
-      border: 1.5px solid #e2e8f0;
+      border: 1.5px solid #cbd5e1;
       border-radius: 8px;
       outline: none;
+      color: #0f172a;
     }
 
     .otp-input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
     }
 
     .submit-btn {
@@ -133,10 +138,10 @@
       cursor: not-allowed;
     }
 
-    /* --- GROCERY DASHBOARD STYLES --- */
+    /* --- SHARE MARKET DASHBOARD STYLES --- */
     .dashboard-container {
       width: 100%;
-      max-width: 1000px;
+      max-width: 1050px;
       animation: fadeIn 0.6s ease-in-out;
     }
 
@@ -145,26 +150,28 @@
       justify-content: space-between;
       align-items: center;
       background: var(--card-bg);
-      padding: 20px 30px;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px 30px;
       border-radius: 16px;
       margin-bottom: 24px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
 
     .dash-header h1 {
       font-size: 24px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .badge-live {
-      background: #ef4444;
-      color: white;
+      background: var(--green);
+      color: #022c22;
       font-size: 11px;
       padding: 3px 8px;
       border-radius: 12px;
-      font-weight: bold;
+      font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1px;
       animation: pulse 1.5s infinite;
@@ -182,10 +189,12 @@
       min-width: 240px;
       padding: 12px 18px;
       border-radius: 10px;
-      border: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.8);
+      color: white;
       font-size: 15px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       outline: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .category-filters {
@@ -197,9 +206,9 @@
     .filter-btn {
       padding: 10px 18px;
       border-radius: 10px;
-      border: none;
-      background: rgba(255, 255, 255, 0.15);
-      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
       cursor: pointer;
       font-weight: 500;
       transition: all 0.2s;
@@ -207,70 +216,93 @@
 
     .filter-btn.active, .filter-btn:hover {
       background: var(--primary);
+      border-color: var(--primary);
     }
 
-    .grocery-grid {
+    .stock-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
       gap: 20px;
     }
 
-    .item-card {
+    .stock-card {
       background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
       border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      padding: 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
       transition: transform 0.2s, box-shadow 0.2s;
-      position: relative;
     }
 
-    .item-card:hover {
+    .stock-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
-    .item-emoji {
-      font-size: 48px;
-      text-align: center;
+    .stock-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
       margin-bottom: 12px;
     }
 
-    .item-title {
+    .stock-symbol {
       font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 4px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
     }
 
-    .item-unit {
+    .stock-name {
       font-size: 12px;
       color: var(--text-muted);
-      margin-bottom: 12px;
+      margin-top: 2px;
     }
 
-    .item-footer {
+    .stock-icon {
+      font-size: 28px;
+    }
+
+    .stock-price {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .stock-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid #f1f5f9;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .item-price {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--primary-hover);
+    .trend-badge {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
-    .trend-indicator {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 4px;
+    .trend-up {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--green);
     }
 
-    .trend-up { background: #fee2e2; color: #dc2626; }
-    .trend-down { background: #d1fae5; color: #059669; }
+    .trend-down {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--red);
+    }
+
+    .stock-highlow {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+    }
 
     .hidden {
       display: none !important;
@@ -296,8 +328,8 @@
     <!-- Step 1: Request OTP -->
     <div id="email-step">
       <div class="auth-header">
-        <h2>Sign In with OTP</h2>
-        <p>Enter your email to receive a real verification code.</p>
+        <h2>Sign In to TradePulse</h2>
+        <p>Enter your email to access live stock market insights.</p>
       </div>
 
       <form id="request-otp-form">
@@ -325,32 +357,35 @@
           <input type="text" class="otp-input" maxlength="1" required />
           <input type="text" class="otp-input" maxlength="1" required />
         </div>
-        <button type="submit" class="submit-btn">Verify & Unlock Prices</button>
+        <button type="submit" class="submit-btn">Verify & Launch Dashboard</button>
       </form>
     </div>
 
   </div>
 
-  <!-- ================= GROCERY DASHBOARD CONTAINER ================= -->
+  <!-- ================= SHARE MARKET DASHBOARD CONTAINER ================= -->
   <div class="dashboard-container hidden" id="dashboard-section">
     
     <div class="dash-header">
-      <h1>🛒 FreshMarket Prices <span class="badge-live">LIVE</span></h1>
-      <p style="color: var(--text-muted); font-size: 14px;">Market rates updated daily</p>
-    </div>
-
-    <div class="controls-bar">
-      <input type="text" id="search-input" class="search-box" placeholder="Search groceries (e.g. Milk, Apples, Eggs)..." />
-      <div class="category-filters">
-        <button class="filter-btn active" onclick="filterCategory('all', this)">All</button>
-        <button class="filter-btn" onclick="filterCategory('fruits', this)">Fruits</button>
-        <button class="filter-btn" onclick="filterCategory('vegetables', this)">Vegetables</button>
-        <button class="filter-btn" onclick="filterCategory('dairy', this)">Dairy & Eggs</button>
+      <div>
+        <h1>📈 TradePulse Market Hub <span class="badge-live">LIVE NSE/BSE</span></h1>
+        <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Real-time market indices and stock ticker</p>
       </div>
     </div>
 
-    <div class="grocery-grid" id="grocery-grid">
-      <!-- Items generated dynamically via JavaScript -->
+    <div class="controls-bar">
+      <input type="text" id="search-input" class="search-box" placeholder="Search stocks (e.g. TCS, Reliance, HDFC, Tata)..." />
+      <div class="category-filters">
+        <button class="filter-btn active" onclick="filterCategory('all', this)">All Stocks</button>
+        <button class="filter-btn" onclick="filterCategory('tech', this)">IT & Tech</button>
+        <button class="filter-btn" onclick="filterCategory('banking', this)">Banking</button>
+        <button class="filter-btn" onclick="filterCategory('energy', this)">Energy</button>
+        <button class="filter-btn" onclick="filterCategory('auto', this)">Auto</button>
+      </div>
+    </div>
+
+    <div class="stock-grid" id="stock-grid">
+      <!-- Stocks generated dynamically via JavaScript -->
     </div>
 
   </div>
@@ -423,50 +458,59 @@
       otpInputs.forEach(input => enteredOtp += input.value);
 
       if (enteredOtp === generatedOtp) {
-        // Hide Auth, Show Dashboard
+        // Hide Auth, Show Share Market Dashboard
         authSection.classList.add('hidden');
         dashboardSection.classList.remove('hidden');
-        renderGroceryItems(groceryData);
+        renderStockItems(stockData);
       } else {
         alert("❌ Incorrect OTP code. Please check your email and try again.");
       }
     });
 
     // =========================================================
-    // GROCERY DATA & RENDERING LOGIC
+    // SHARE MARKET DATA & RENDERING LOGIC
     // =========================================================
-    const groceryData = [
-      { name: "Fresh Farm Milk", price: "₹64", unit: "1 Litre", cat: "dairy", emoji: "🥛", trend: "-2%", trendType: "down" },
-      { name: "Organic Eggs", price: "₹85", unit: "Tray of 12", cat: "dairy", emoji: "🥚", trend: "+4%", trendType: "up" },
-      { name: "Shimla Apples", price: "₹180", unit: "1 kg", cat: "fruits", emoji: "🍎", trend: "-5%", trendType: "down" },
-      { name: "Bananas (Robusta)", price: "₹50", unit: "1 dozen", cat: "fruits", emoji: "🍌", trend: "0%", trendType: "down" },
-      { name: "Fresh Tomatoes", price: "₹38", unit: "1 kg", cat: "vegetables", emoji: "🍅", trend: "-12%", trendType: "down" },
-      { name: "Onions", price: "₹32", unit: "1 kg", cat: "vegetables", emoji: "🧅", trend: "+3%", trendType: "up" },
-      { name: "Potatoes", price: "₹28", unit: "1 kg", cat: "vegetables", emoji: "🥔", trend: "0%", trendType: "down" },
-      { name: "Amul Butter", price: "₹58", unit: "100g", cat: "dairy", emoji: "🧈", trend: "0%", trendType: "down" },
-      { name: "Fresh Spinach (Palak)", price: "₹25", unit: "1 Bunch", cat: "vegetables", emoji: "🥬", trend: "-8%", trendType: "down" },
-      { name: " Alphonso Mangoes", price: "₹350", unit: "1 kg", cat: "fruits", emoji: "🥭", trend: "+10%", trendType: "up" }
+    const stockData = [
+      { symbol: "RELIANCE", name: "Reliance Industries", price: "₹2,980.50", change: "+1.85%", type: "up", cat: "energy", icon: "⚡", high: "₹3,010", low: "₹2,945" },
+      { symbol: "TCS", name: "Tata Consultancy Services", price: "₹4,120.10", change: "+0.92%", type: "up", cat: "tech", icon: "💻", high: "₹4,150", low: "₹4,080" },
+      { symbol: "HDFCBANK", name: "HDFC Bank Ltd.", price: "₹1,640.00", change: "-0.65%", type: "down", cat: "banking", icon: "🏦", high: "₹1,665", low: "₹1,632" },
+      { symbol: "INFY", name: "Infosys Ltd.", price: "₹1,850.30", change: "+2.10%", type: "up", cat: "tech", icon: "🌐", high: "₹1,875", low: "₹1,810" },
+      { symbol: "TATAMOTORS", name: "Tata Motors Ltd.", price: "₹1,015.40", change: "+3.45%", type: "up", cat: "auto", icon: "🚗", high: "₹1,030", low: "₹980" },
+      { symbol: "ICICIBANK", name: "ICICI Bank Ltd.", price: "₹1,210.75", change: "-0.30%", type: "down", cat: "banking", icon: "💳", high: "₹1,225", low: "₹1,200" },
+      { symbol: "ONGC", name: "Oil & Natural Gas Corp", price: "₹315.20", change: "-1.15%", type: "down", cat: "energy", icon: "🛢️", high: "₹322", low: "₹312" },
+      { symbol: "MAHINDRA", name: "Mahindra & Mahindra", price: "₹2,840.00", change: "+1.20%", type: "up", cat: "auto", icon: "🚜", high: "₹2,870", low: "₹2,800" },
+      { symbol: "SBIN", name: "State Bank of India", price: "₹825.60", change: "+0.45%", type: "up", cat: "banking", icon: "🏛️", high: "₹835", low: "₹818" },
+      { symbol: "WIPRO", name: "Wipro Limited", price: "₹530.80", change: "-1.80%", type: "down", cat: "tech", icon: "🖥️", high: "₹545", low: "₹525" }
     ];
 
-    function renderGroceryItems(items) {
-      const grid = document.getElementById('grocery-grid');
+    function renderStockItems(stocks) {
+      const grid = document.getElementById('stock-grid');
       grid.innerHTML = "";
 
-      if (items.length === 0) {
-        grid.innerHTML = `<p style="color: white; grid-column: 1/-1; text-align: center;">No grocery items found.</p>`;
+      if (stocks.length === 0) {
+        grid.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 40px 0;">No matching stocks found.</p>`;
         return;
       }
 
-      items.forEach(item => {
+      stocks.forEach(stock => {
         const card = document.createElement('div');
-        card.className = 'item-card';
+        card.className = 'stock-card';
         card.innerHTML = `
-          <div class="item-emoji">${item.emoji}</div>
-          <div class="item-title">${item.name}</div>
-          <div class="item-unit">${item.unit}</div>
-          <div class="item-footer">
-            <span class="item-price">${item.price}</span>
-            <span class="trend-indicator trend-${item.trendType}">${item.trend}</span>
+          <div class="stock-header">
+            <div>
+              <div class="stock-symbol">${stock.symbol}</div>
+              <div class="stock-name">${stock.name}</div>
+            </div>
+            <div class="stock-icon">${stock.icon}</div>
+          </div>
+          <div class="stock-price">${stock.price}</div>
+          <div class="stock-footer">
+            <span class="trend-badge trend-${stock.type}">
+              ${stock.type === 'up' ? '▲' : '▼'} ${stock.change}
+            </span>
+            <div class="stock-highlow">
+              H: ${stock.high}<br>L: ${stock.low}
+            </div>
           </div>
         `;
         grid.appendChild(card);
@@ -479,18 +523,21 @@
       button.classList.add('active');
 
       if (category === 'all') {
-        renderGroceryItems(groceryData);
+        renderStockItems(stockData);
       } else {
-        const filtered = groceryData.filter(item => item.cat === category);
-        renderGroceryItems(filtered);
+        const filtered = stockData.filter(stock => stock.cat === category);
+        renderStockItems(filtered);
       }
     }
 
     // Search Box Handler
     document.getElementById('search-input').addEventListener('input', (e) => {
       const query = e.target.value.toLowerCase();
-      const searched = groceryData.filter(item => item.name.toLowerCase().includes(query));
-      renderGroceryItems(searched);
+      const searched = stockData.filter(stock => 
+        stock.symbol.toLowerCase().includes(query) || 
+        stock.name.toLowerCase().includes(query)
+      );
+      renderStockItems(searched);
     });
   </script>
 </body>
